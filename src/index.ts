@@ -52,6 +52,10 @@ interface TransformedRecord {
 
 export const readFile  = (fileName: string) => util.promisify(fs.readFile)(fileName, ENCODING_UTF8);
 export const writeFile = (fileName: string, data: string) => util.promisify(fs.writeFile)(fileName, data, ENCODING_UTF8);
+
+/**
+ * Parse string to JSON object
+ */
 export const parseJson = (data: string) => { 
     try {
         JSON.parse(data) 
@@ -60,6 +64,10 @@ export const parseJson = (data: string) => {
     }
     return JSON.parse(data);
 };
+
+/**
+ * Transform customer order to a new format and calculate its revenne
+ */
 export const transformOrder = async (order: Order) => {
 
     let orderItems: OrderItem[] = [];
@@ -76,6 +84,10 @@ export const transformOrder = async (order: Order) => {
     return orderItems;
 }
 
+/**
+ * Transform records of original data to a required format
+ * New format: { cutsomers: [...], orders: [...] }
+ */
 export const transfromInputRecords = async (records: InputRecord[]): Promise<TransformedRecord> => {
     let customers: Customer[]      = [];
     let orders: TransformedOrder[] = [];
@@ -99,14 +111,18 @@ export const transfromInputRecords = async (records: InputRecord[]): Promise<Tra
     });
 }
 
-export const start = async (inputFile: string, outputFile: string) => {
+/**
+ * Entry of the program. 
+ * Read content from @inputFilePath and write transformed data to @outputFilePath
+ */
+export const start = async (inputFilePath: string, outputFilePath: string) => {
     
     try {
 
-        const fileData               = await readFile(inputFile).catch(() => { throw ERROR_MSG.readFileError });
+        const fileData               = await readFile(inputFilePath).catch(() => { throw ERROR_MSG.readFileError });
         const records: InputRecord[] = parseJson(fileData);
         const transformedRecords     = await transfromInputRecords(records);
-        await writeFile(outputFile, JSON.stringify(transformedRecords)).catch(() => { throw ERROR_MSG.writeFileError });
+        await writeFile(outputFilePath, JSON.stringify(transformedRecords)).catch(() => { throw ERROR_MSG.writeFileError });
     
     } catch (e) {
 

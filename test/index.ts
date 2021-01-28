@@ -1,8 +1,10 @@
-import { readFile, writeFile, parseJson, transformOrder, transfromInputRecords, start } from '../src';
+import { readFile, writeFile, parseJson, transformOrder, transfromInputRecords, start, ERROR_MSG } from '../src';
 import fs from 'fs';
 import path from 'path';
+const INPUT_FILE_PATH  = path.join(__dirname, '../data.json');
+const OUTPUT_FILE_PATH = path.join(__dirname, '../test/test-output.json');
 
-describe('Running unit tests: ', () => {
+describe('Test success cases: ', () => {
 
     it('readFile', async () => {
         const response = await readFile('./data.json');
@@ -12,18 +14,16 @@ describe('Running unit tests: ', () => {
 
     it('writeFile', async () => {
 
-        const output_path = './data-output.json';
-        await writeFile(output_path, '{"id": 1, "vendor": "acme"}');
+        await writeFile(OUTPUT_FILE_PATH, '{"id": 1, "vendor": "acme"}');
 
-        expect(fs.existsSync(output_path)).toBe(true);
-        expect(fs.readFileSync(output_path, 'utf8')).toBe('{"id": 1, "vendor": "acme"}');
+        expect(fs.existsSync(OUTPUT_FILE_PATH)).toBe(true);
+        expect(fs.readFileSync(OUTPUT_FILE_PATH, 'utf8')).toBe('{"id": 1, "vendor": "acme"}');
     });
 
     it('parseJson', async () => {
         const data = parseJson('{"id": 1, "vendor": "acme"}');
         expect(data).toEqual({ id: 1, vendor: "acme" });
     });
-
 
     it('transformOrder', async () => {
         const orderData = {
@@ -144,13 +144,36 @@ describe('Running unit tests: ', () => {
 
     it('start', async () => {
 
-        const INPUT_FILE_PATH  = path.join(__dirname, '../data.json');
-        const OUTPUT_FILE_PATH = path.join(__dirname, '../test-output.json');
-
         await start(INPUT_FILE_PATH, OUTPUT_FILE_PATH);
 
-        expect(fs.existsSync(path.join(__dirname, '../test-output.json'))).toBe(true);
+        expect(fs.existsSync(path.join(__dirname, '../test/test-output.json'))).toBe(true);
 
+    });
+
+});
+
+
+describe('Test failure cases: ', () => {
+
+    beforeEach(() => {
+        // create a new mock function for each test
+        console.log = jest.fn(); 
+    });
+
+    it('Input file does not exist', async () => {
+
+        await start('', OUTPUT_FILE_PATH);
+
+        expect(console.log).toHaveBeenCalledWith(ERROR_MSG.readFileError);
+    });
+
+    it('Input file contains invalid json data', async () => {
+
+        const inputFilePath = path.join(__dirname, '../test/invalid-data.json');
+
+        await start(inputFilePath, OUTPUT_FILE_PATH);
+        
+        expect(console.log).toHaveBeenCalledWith(ERROR_MSG.parseJsonError);
 
     });
 

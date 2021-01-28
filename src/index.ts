@@ -1,4 +1,3 @@
-import { throws } from 'assert';
 import fs from 'fs';
 import path from 'path';
 import util from 'util';
@@ -6,6 +5,12 @@ import util from 'util';
 const ENCODING_UTF8    = 'utf8';
 const INPUT_FILE_PATH  = path.join(__dirname, '../data.json');
 const OUTPUT_FILE_PATH = path.join(__dirname, '../data-transformed.json');
+
+export const ERROR_MSG = {
+    readFileError : 'Error occurred when read data from file',
+    writeFileError: 'Error occurred when write data to file',
+    parseJsonError: 'Error occurred when parse json data',
+}
 
 interface OrderItem  {
     quantity : number,
@@ -45,9 +50,16 @@ interface TransformedRecord {
     orders   : TransformedOrder[],
 }
 
-export const readFile       = (fileName: string) => util.promisify(fs.readFile)(fileName, ENCODING_UTF8);
-export const writeFile      = (fileName: string, data: string) => util.promisify(fs.writeFile)(fileName, data, ENCODING_UTF8);
-export const parseJson      = (data: string) => { return JSON.parse(data) };
+export const readFile  = (fileName: string) => util.promisify(fs.readFile)(fileName, ENCODING_UTF8);
+export const writeFile = (fileName: string, data: string) => util.promisify(fs.writeFile)(fileName, data, ENCODING_UTF8);
+export const parseJson = (data: string) => { 
+    try {
+        JSON.parse(data) 
+    } catch (error) {
+        throw ERROR_MSG.parseJsonError
+    }
+    return JSON.parse(data);
+};
 export const transformOrder = async (order: Order) => {
 
     let orderItems: OrderItem[] = [];
@@ -73,11 +85,10 @@ export const transfromInputRecords = async (records: InputRecord[]): Promise<Tra
         const customerOrderItems = await transformOrder(order)
         orders.push(
             Object.assign(
-                {}, 
                 {order: customerOrderItems, customer: customer.id}, 
                 meta
             )
-        );        
+        );  
     }
 
     return new Promise((resolve) => {
@@ -92,10 +103,10 @@ export const start = async (inputFile: string, outputFile: string) => {
     
     try {
 
-        const fileData               = await readFile(inputFile).catch((error) => { throw `Error occurred when reading file from path ${INPUT_FILE_PATH}` });
+        const fileData               = await readFile(inputFile).catch(() => { throw ERROR_MSG.readFileError });
         const records: InputRecord[] = parseJson(fileData);
         const transformedRecords     = await transfromInputRecords(records);
-        await writeFile(outputFile, JSON.stringify(transformedRecords)).catch((error) => { throw `Error occurred when writing file to path ${OUTPUT_FILE_PATH}` });
+        await writeFile(outputFile, JSON.stringify(transformedRecords)).catch(() => { throw ERROR_MSG.writeFileError });
     
     } catch (e) {
 

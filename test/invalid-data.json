@@ -1,0 +1,28 @@
+
+     "id": 1,
+     "vendor": "acme",
+     "date": "03/03/2017",
+     "customer": {
+      "id": "8baa6dea-cc70-4748-9b27-b174e70e4b66",
+      "name": "Lezlie Stuther",
+      "address": "19045 Lawn Court"
+     },
+     "order": {
+      "hat": {
+       "quantity": 14,
+       "price": 8
+      },
+      "cake": {
+       "quantity": 9,
+       "price": 3
+      },
+      "ice": {
+       "quantity": 10,
+       "price": 5
+      },
+      "candy": {
+       "quantity": 6,
+       "price": 8
+      }
+     }
+    }

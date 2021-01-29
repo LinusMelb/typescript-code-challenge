@@ -66,7 +66,7 @@ export const parseJson = (data: string) => {
 };
 
 /**
- * Transform customer order to a new format and calculate its revenne
+ * Transform customer order to a new format and calculate its revenue
  */
 export const transformOrder = async (order: Order) => {
 
